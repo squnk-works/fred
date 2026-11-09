@@ -1,0 +1,42 @@
+# TRUSTED PR PoC TEST FIXTURE on the base repo. Remove at teardown.
+# Fork PRs run this from the base branch (pull_request). No secrets, OIDC, pull_request_target or external actions.
+# PR title containing `[forge-run]`: the forge job runs (variant A). Otherwise it is skipped (variant B / M2b).
+name: zz-forge-base
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  forge:
+    if: ${{ contains(github.event.pull_request.title, '[forge-run]') }}
+    name: trusted-pr/authorized
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Produce forged check
+        run: echo "fork-triggered job; no credentials and no privileged API used"
+
+  m5-api-attempt:
+    if: ${{ contains(github.event.pull_request.title, '[forge-run]') }}
+    name: m5-api-attempt
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - name: POST check-runs to the base repo with GITHUB_TOKEN
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          code=$(curl -sS -o /tmp/m5.json -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/squnk-works/fred/check-runs \
+            -d "{\"name\":\"trusted-pr/authorized\",\"head_sha\":\"$HEAD_SHA\",\"status\":\"completed\",\"conclusion\":\"success\"}") || true
+          echo "M5 http_status=$code"
+          sed -n 's/.*"message": *"\([^"]*\)".*/M5 message=\1/p' /tmp/m5.json | head -n1
