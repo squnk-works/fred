@@ -1,0 +1,36 @@
+name: CodeQL Scan
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - python
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@5895b2c9be147bc7f1c75ce72c5cb577febb1907 #v4
+        with:
+          language: ${{ matrix.language }}
+
+      # Add build steps here if the repository contains compiled languages.
+      # Python and JavaScript/TypeScript normally use CodeQL autobuild behavior.
+
+      - name: Analyze with CodeQL
+        uses: github/codeql-action/analyze@5895b2c9be147bc7f1c75ce72c5cb577febb1907 #v4
+        with:
+          category: "/language:${{ matrix.language }}"
