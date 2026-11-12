@@ -19,69 +19,24 @@ jobs:
       enable-commit-email-check: true
       enable-commit-msg-check: false
       enable-armor-checkers: false
-
     permissions:
       contents: read
       security-events: write
-  
+
   poutine:
     name: Poutine CI/CD Security Scan
-    if: >-
-      ${{
-        github.event_name == 'workflow_dispatch' ||
-        (
-          github.event_name != 'schedule' &&
-          github.event.repository.default_branch == 'main'
-        )
-      }}
-
-    runs-on: ubuntu-latest
-
+    uses: ./.github/workflows/poutine.yml
+    with:
+      enable-poutine-scan: true
     permissions:
       contents: read
       security-events: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
-
-      - name: Run Poutine
-        uses: boostsecurityio/poutine-action@e240ebd3eff8b2db5a8e5f6b28f58739d7db2247 #v1.1.4
-
-      - name: Upload Poutine SARIF
-        if: ${{ !cancelled() && hashFiles('results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@5895b2c9be147bc7f1c75ce72c5cb577febb1907 #v4
-        with:
-          sarif_file: results.sarif
-          category: poutine
 
   codeql:
-    name: CodeQL (${{ matrix.language }})
-    runs-on: ubuntu-latest
-
+    name: CodeQL Scan
+    uses: ./.github/workflows/codeql.yml
+    with:
+      enable-codeql-scan: true
     permissions:
       contents: read
       security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language:
-          - python
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@5895b2c9be147bc7f1c75ce72c5cb577febb1907 #v4
-        with:
-          language: actions
-
-      # Add build steps here if the repository contains compiled languages.
-      # Python and JavaScript/TypeScript normally use CodeQL autobuild behavior.
-
-      - name: Analyze with CodeQL
-        uses: github/codeql-action/analyze@5895b2c9be147bc7f1c75ce72c5cb577febb1907 #v4
-        with:
-          category: "/language:${{ matrix.language }}"
