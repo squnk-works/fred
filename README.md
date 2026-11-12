@@ -48,3 +48,5 @@ How to contact maintainers. E.g. GitHub Issues, GitHub Discussions could be indi
 *\<update with your project name and license\>*
 
 *\<REPLACE-ME\>* is licensed under the [REPLACE-ME with license name](https://spdx.org/licenses/REPLACE-ME-with-correct-URL-to-SPDX-license). See [LICENSE.txt](LICENSE.txt) for the full license text.
+
+<!-- pass-test 2026-11-12 -->
