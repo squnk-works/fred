@@ -1,7 +1,13 @@
-name: CodeQL Scan
+name: CodeQL
 
 on:
   workflow_call:
+    inputs:
+      enable-codeql-scan:
+        description: Enable the CodeQL scan
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -9,6 +15,7 @@ permissions:
 
 jobs:
   codeql:
+    if: ${{ inputs.enable-codeql-scan }}
     name: CodeQL (${{ matrix.language }})
     runs-on: ubuntu-latest
 
